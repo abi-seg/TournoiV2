@@ -1,5 +1,6 @@
-# models.py
 from datetime import datetime
+
+
 class Joueur:
     def __init__(self, nom, prenom, id_federation, sexe, classement):
         self.nom = nom
@@ -17,7 +18,7 @@ class Joueur:
         print(f"Sexe: {self.sexe}")
         print(f"Classement: {self.classement}")
 
-    def to_dict(self): #to_dict() → transforme le joueur en dictionnaire compatible avec JSON.
+    def to_dict(self):
         """Convertit le joueur en dictionnaire pour l'enregistrement JSON."""
         return {
             "nom": self.nom,
@@ -29,21 +30,24 @@ class Joueur:
         }
 
     @classmethod
-    def from_dict(cls, data): #from_dict() → méthode de classe qui recrée un joueur à partir d’un dictionnaire JSON.
+    def from_dict(cls, data):
         """Crée un joueur à partir d’un dictionnaire JSON."""
-        joueur =  cls(
+        joueur = cls(
             nom=data["nom"],
             prenom=data["prenom"],
             id_federation=data["id_federation"],
             sexe=data["sexe"],
             classement=data["classement"]
         )
-        joueur.points = data.get("points",0)
+        joueur.points = data.get("points", 0)
         return joueur
 
 
 class Tournoi:
-    def __init__(self, nom, lieu, date_debut, date_fin, nombre_de_rondes=4, description=""):
+    def __init__(
+        self, nom, lieu, date_debut, date_fin,
+        nombre_de_rondes=4, description=""
+    ):
         self.nom = nom
         self.lieu = lieu
         self.date_debut = date_debut
@@ -55,12 +59,15 @@ class Tournoi:
         self.rondes = []
 
     def __str__(self):
-        return (f"Tournoi: {self.nom}\n"
-                f"Lieu: {self.lieu}\n"
-                f"Date de debut: {self.date_debut}\n"
-                f"Date de fin: {self.date_fin}\n"
-                f"Nombre de rondes: {self.nombre_de_rondes}\n"
-                f"Description: {self.description}")
+        return (
+            f"Tournoi: {self.nom}\n"
+            f"Lieu: {self.lieu}\n"
+            f"Date de debut: {self.date_debut}\n"
+            f"Date de fin: {self.date_fin}\n"
+            f"Nombre de rondes: {self.nombre_de_rondes}\n"
+            f"Description: {self.description}"
+        )
+
     def to_dict(self):
         return {
             "nom": self.nom,
@@ -84,9 +91,13 @@ class Tournoi:
             nombre_de_rondes=data.get("nombre_de_rondes", 4),
             description=data.get("description", "")
         )
-        tournoi.current_round_number=data.get("current_round_number",0)
-        tournoi.joueurs = [Joueur.from_dict(j) for j in data.get("joueurs", [])]
-        tournoi.rondes = [Ronde.from_dict(r) for r in data.get("rondes", [])]
+        tournoi.current_round_number = data.get("current_round_number", 0)
+        tournoi.joueurs = [
+            Joueur.from_dict(j) for j in data.get("joueurs", [])
+        ]
+        tournoi.rondes = [
+            Ronde.from_dict(r) for r in data.get("rondes", [])
+        ]
         return tournoi
 
 
@@ -96,11 +107,19 @@ class Match:
         self.joueur2 = joueur2
         self.score1 = score1
         self.score2 = score2
+
     def to_tuple(self):
-        return([self.joueur1, self.score1], [self.joueur2, self.score2])
+        return (
+            [self.joueur1, self.score1],
+            [self.joueur2, self.score2]
+        )
+
     def __str__(self):
-        return (f"{self.joueur1.nom} vs {self.joueur2.nom} => Score: {self.score1} - {self.score2}")
-   
+        return (
+            f"{self.joueur1.nom} vs {self.joueur2.nom} => "
+            f"Score: {self.score1} - {self.score2}"
+        )
+
     def to_dict(self):
         return {
             "joueur1": self.joueur1.to_dict(),
@@ -145,7 +164,10 @@ class Ronde:
         for idx, match in enumerate(self.matchs, start=1):
             joueur1, score1 = match[0]
             joueur2, score2 = match[1]
-            resultat += f"  Match {idx}: {joueur1.nom} vs {joueur2.nom} => Score: {score1} - {score2}\n"
+            resultat += (
+                f"  Match {idx}: {joueur1.nom} vs {joueur2.nom} => "
+                f"Score: {score1} - {score2}\n"
+            )
         return resultat
 
     def to_dict(self):
