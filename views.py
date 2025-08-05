@@ -25,20 +25,25 @@ def afficher_tournoi(tournoi):
     print(f"Date de fin : {tournoi.date_fin}")
     print(f"Nombre de rondes prévues : {tournoi.nombre_de_rondes}")
     print(f"Description : {tournoi.description}")
-    #afficher les joueurs du tournoi
+    # Afficher les joueurs du tournoi
     if tournoi.joueurs:
-        print("\n Joueurs inscrits dans ce tournoi : ")
-        for idx, joueur in enumerate(sorted(tournoi.joueurs, key=lambda j: (j.nom,j.prenom)), start = 1):
-            print(f"{idx}.{joueur.nom} {joueur.prenom} (ID: {joueur.id_federation}, Classement: {joueur.classement})")
+        print("\nJoueurs inscrits dans ce tournoi :")
+        for idx, joueur in enumerate(
+            sorted(tournoi.joueurs, key=lambda j: (j.nom, j.prenom)), start=1
+        ):
+            print(
+                f"{idx}. {joueur.nom} {joueur.prenom} "
+                f"(ID: {joueur.id_federation})"
+                f"(Classement: {joueur.classement})"
+            )
     else:
         print("Aucun joueur inscrit dans ce tournoi.")
 
-    #print(f"Nombre de joueurs inscrits : {len(tournoi.joueurs)}")
-    #print(f"Nombre de rondes jouées : {len(tournoi.rondes)}")
 
 def afficher_match(match):
     print(f"Match: {match.joueur1.nom} vs {match.joueur2.nom}")
     print(f"Score: {match.score1} - {match.score2}")
+
 
 def afficher_ronde(ronde):
     print(f"\n--- Ronde {ronde.numero} ---")
@@ -46,6 +51,7 @@ def afficher_ronde(ronde):
         print(f"Match {i}:")
         afficher_match(match)
         print("-" * 20)
+
 
 def afficher_tous_les_tours(tournoi):
     if not tournoi or not tournoi.rondes:
