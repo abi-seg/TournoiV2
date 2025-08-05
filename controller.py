@@ -1,23 +1,7 @@
 # controller.py
-import os
 import json
 from models import Joueur, Tournoi, Match, Ronde
 from views import afficher_menu, afficher_tournoi, afficher_match, afficher_ronde, afficher_tous_les_tours
-""""
-def sauvegarder_tournoi(tournoi, chemin_fichier="tournois.json"):
-    
-    try:
-        with open(chemin_fichier, "r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        data = []
-
-    data.append(tournoi.to_dict())
-
-    with open(chemin_fichier, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4)
-    print(f"Tournoi ajouté à {chemin_fichier}")
-"""
 def sauvegarder_tous_les_tournois(liste_tournois, chemin_fichier="tournois.json"):
     data = [t.to_dict() for t in liste_tournois]
     with open(chemin_fichier, "w", encoding="utf-8") as f:
@@ -100,11 +84,13 @@ def creer_tournoi(joueurs):
        print(f"{idx}.{joueur.nom} {joueur.prenom}")
     selections = input("Numéros des joueurs : ")
     try:
-        indices=[int(s.strip()) - 1 for s in selections.split(",")]
+        indices=[int(s.strip()) - 1 for s in selections.split(",") if s.strip()]
         for idx in indices:
             if 0<=idx<len(joueurs):
                 tournoi.joueurs.append(joueurs[idx])
         print("Joueurs ajoutés au tournoi.")
+    #debugging
+        print(f"DEBUG: {len(tournoi.joueurs)} joueurs ajoutée au tournoi.")
     except Exception as e:
         print("Erreur lors de la sélection des joueurs : ",e)
     return tournoi
@@ -160,12 +146,16 @@ def generate_next_round_pairs(joueurs, previous_matches):
             i += 1
     return pairs
 def start_new_round(tournoi):
+    if len(tournoi.rondes) >= tournoi.nombre_de_rondes:
+        print(f"Le nombre maximum de {tournoi.nombre_de_rondes} tours a déjà été atteint pour ce tournoi.")
+        return None
     if not tournoi.rondes:
         pairs = generate_first_round_pairs(tournoi.joueurs)
     else:
         previous_matches = get_previous_matches(tournoi)
         pairs = generate_next_round_pairs(tournoi.joueurs, previous_matches)
-    
+    #debugging line
+    print(f"DEBUG: Pairs generated for this round:{pairs}")
     round_number = len(tournoi.rondes) + 1
     ronde = Ronde(round_number)
     for pair in pairs:
@@ -174,8 +164,10 @@ def start_new_round(tournoi):
         ronde.ajouter_match(joueur1, joueur2)
     tournoi.rondes.append(ronde)
     tournoi.current_round_number = round_number
+    #Debugging line
+    print(f"DEBUG: {len(ronde.matchs)} matches in this round.")
     print(f"{ronde.name} started with the following pairings:")
-    print(ronde)
+    print(ronde) #prints all matches in the round
     return ronde
 def enter_results_for_round(ronde):
     for idx, match in enumerate(ronde.matchs):
@@ -298,7 +290,10 @@ def menu_principal():
                 selection = int(input("Sélectionnez le tournoi : "))
                 if 1 <= selection <= len(tournois):
                     tournoi = tournois[selection - 1]
-                    ronde = start_new_round(tournoi)
+                    if len(tournoi.rondes) < tournoi.nombre_de_rondes:
+                       ronde = start_new_round(tournoi)
+                    else:
+                        print(f"Le nombre maximum de {tournoi.nombre_de_rondes} tours a déjà étéatteint pour ce tournoi")
                 else:
                     print("Numéro invalide.")
             else:

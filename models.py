@@ -119,8 +119,6 @@ class Match:
         )
 
 
-from datetime import datetime
-
 class Ronde:
     def __init__(self, numero, matchs=None):
         self.name = f"Round {numero}"
