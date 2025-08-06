@@ -1,12 +1,23 @@
 # controller.py
 import json
+import random
 from models import Joueur, Tournoi, Match, Ronde
-from views import afficher_menu, afficher_tournoi, afficher_match, afficher_ronde, afficher_tous_les_tours
-def sauvegarder_tous_les_tournois(liste_tournois, chemin_fichier="tournois.json"):
+from views import (
+    afficher_menu,
+    afficher_tournoi,
+    afficher_match,
+    afficher_ronde,
+    afficher_tous_les_tours,
+)
+
+
+def sauvegarder_tous_les_tournois(
+        liste_tournois, chemin_fichier="tournois.json"):
     data = [t.to_dict() for t in liste_tournois]
     with open(chemin_fichier, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4)
     print(f"Tous les tournois sauvegardés dans {chemin_fichier}")
+
 
 def sauvegarder_joueurs(liste_joueurs, nom_fichier="joueurs.json"):
     data = []
@@ -29,9 +40,14 @@ def charger_joueurs(nom_fichier="joueurs.json"):
         with open(nom_fichier, "r", encoding="utf-8") as f:
             data = json.load(f)
             for item in data:
-                joueur = Joueur(item["nom"], item["prenom"], item["id_federation"], item["sexe"], item["classement"])
+                joueur = Joueur(
+                    item["nom"],
+                    item["prenom"],
+                    item["id_federation"],
+                    item["sexe"],
+                    item["classement"]
+                    )
                 liste_joueurs.append(joueur)
-        #print(f"{len(liste_joueurs)} joueurs chargés depuis {nom_fichier}")
     except FileNotFoundError:
         print("Aucun fichier de joueurs trouvé. Liste vide initialisée.")
     return liste_joueurs
@@ -42,12 +58,10 @@ def charger_tournois(chemin_fichier="tournois.json"):
     try:
         with open(chemin_fichier, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return[Tournoi.from_dict(t) for t in data]
-            
+            return [Tournoi.from_dict(t) for t in data]
     except FileNotFoundError:
         print("Fichier non trouvé.")
         return []
-
 
 
 def creer_joueur():
@@ -63,6 +77,7 @@ def creer_joueur():
         classement = 0
     return Joueur(nom, prenom, id_federation, sexe, classement)
 
+
 def creer_tournoi(joueurs):
     nom = input("Nom du tournoi : ")
     lieu = input("Lieu du tournoi : ")
@@ -70,42 +85,38 @@ def creer_tournoi(joueurs):
     date_fin = input("Date de fin (AAAA-MM-JJ) : ")
     try:
         nombre_de_rondes = int(input("Nombre de rondes (défaut = 4) : ") or 4)
-        if nombre_de_rondes !=4:
+        if nombre_de_rondes != 4:
             print("Seules 4 rondes sont autorisées.")
             nombre_de_rondes = 4
     except ValueError:
         print("Valeur invalide, nombre de rondes mis à 4.")
-        
     description = input("Description (optionnelle) : ")
-    tournoi = Tournoi(nom, lieu, date_debut, date_fin, nombre_de_rondes, description)
-    #-------select players for the tournament-----
-    print("\n Sélectionnez les joueurs à ajouter au tournoi(enterez les numéros séparés par des virgules):")
+    tournoi = Tournoi(
+        nom, lieu, date_debut, date_fin, nombre_de_rondes, description
+        )
+    # -------select players for the tournament-----
+    print(
+        "\n Sélectionnez les joueurs à ajouter au tournoi"
+        "(enterez les numéros séparés par des virgules):")
     for idx, joueur in enumerate(joueurs, start=1):
-       print(f"{idx}.{joueur.nom} {joueur.prenom}")
+        print(f"{idx}. {joueur.nom} {joueur.prenom}")
     selections = input("Numéros des joueurs : ")
     try:
-        indices=[int(s.strip()) - 1 for s in selections.split(",") if s.strip()]
+        indices = [
+            int(s.strip()) - 1
+            for s in selections.split(",")
+            if s.strip()
+            ]
         for idx in indices:
-            if 0<=idx<len(joueurs):
+            if 0 <= idx < len(joueurs):
                 tournoi.joueurs.append(joueurs[idx])
         print("Joueurs ajoutés au tournoi.")
-    #debugging
+    # debugging
         print(f"DEBUG: {len(tournoi.joueurs)} joueurs ajoutée au tournoi.")
     except Exception as e:
-        print("Erreur lors de la sélection des joueurs : ",e)
+        print("Erreur lors de la sélection des joueurs : ", e)
     return tournoi
-"""""
-def tester_match_et_ronde():
-    joueur1 = Joueur("Alice", "Durand", "FR001", "f", 1600)
-    joueur2 = Joueur("Bob", "Martin", "FR002", "m", 1550)
-    match = Match(joueur1, joueur2, score1=1, score2=0)
-    print("\n ----- Affichage Match ------")
-    afficher_match(match)
-    ronde = Ronde(1)
-    ronde.ajouter_match(match)
-    afficher_ronde(ronde)
-"""
-import random
+
 
 def generate_first_round_pairs(joueurs):
     joueurs_copy = joueurs[:]
@@ -117,13 +128,18 @@ def generate_first_round_pairs(joueurs):
         pairs.append(([joueur1, 0], [joueur2, 0]))
     return pairs
 
+
 def get_previous_matches(tournoi):
     previous_matches = set()
     for ronde in tournoi.rondes:
         for match in ronde.matchs:
-            key = frozenset([match[0][0].id_federation, match[1][0].id_federation])
+            key = frozenset([
+                match[0][0].id_federation,
+                match[1][0].id_federation
+                ])
             previous_matches.add(key)
     return previous_matches
+
 
 def generate_next_round_pairs(joueurs, previous_matches):
     joueurs_sorted = sorted(joueurs, key=lambda j: j.points, reverse=True)
@@ -145,16 +161,21 @@ def generate_next_round_pairs(joueurs, previous_matches):
         while i < len(joueurs_sorted) and joueurs_sorted[i] in used:
             i += 1
     return pairs
+
+
 def start_new_round(tournoi):
     if len(tournoi.rondes) >= tournoi.nombre_de_rondes:
-        print(f"Le nombre maximum de {tournoi.nombre_de_rondes} tours a déjà été atteint pour ce tournoi.")
+        print(
+            f"Le nombre maximum de {tournoi.nombre_de_rondes}"
+            "tours a déjà été atteint pour ce tournoi."
+            )
         return None
     if not tournoi.rondes:
         pairs = generate_first_round_pairs(tournoi.joueurs)
     else:
         previous_matches = get_previous_matches(tournoi)
         pairs = generate_next_round_pairs(tournoi.joueurs, previous_matches)
-    #debugging line
+    # debugging line
     print(f"DEBUG: Pairs generated for this round:{pairs}")
     round_number = len(tournoi.rondes) + 1
     ronde = Ronde(round_number)
@@ -164,11 +185,13 @@ def start_new_round(tournoi):
         ronde.ajouter_match(joueur1, joueur2)
     tournoi.rondes.append(ronde)
     tournoi.current_round_number = round_number
-    #Debugging line
+    # Debugging line
     print(f"DEBUG: {len(ronde.matchs)} matches in this round.")
     print(f"{ronde.name} started with the following pairings:")
-    print(ronde) #prints all matches in the round
+    print(ronde)
     return ronde
+
+
 def enter_results_for_round(ronde):
     for idx, match in enumerate(ronde.matchs):
         joueur1, _ = match[0]
@@ -181,6 +204,7 @@ def enter_results_for_round(ronde):
             print("Invalid input, setting scores to 0.")
             score1, score2 = 0, 0
         ronde.entrer_resultat(idx, score1, score2)
+
 
 def update_player_points(ronde):
     for match in ronde.matchs:
@@ -196,14 +220,17 @@ def tester_match_et_ronde_dynamique(joueurs):
         return
 
     print("\nSélectionnez les joueurs pour le match :")
-    for idx, joueur in enumerate(joueurs, start=1):#to get index and it's value enumerate is used
+    for idx, joueur in enumerate(joueurs, start=1):
         print(f"{idx}. {joueur.nom} {joueur.prenom}")
 
     try:
-        idx1 = int(input("Numéro du premier joueur : ")) - 1 #On soustrait 1 pour passer d'une numérotation "humaine" (qui commence à 1) 
-                                                             #à une numérotation Python (qui commence à 0).
+        idx1 = int(input("Numéro du premier joueur : ")) - 1
         idx2 = int(input("Numéro du second joueur : ")) - 1
-        if idx1 == idx2 or idx1 not in range(len(joueurs)) or idx2 not in range(len(joueurs)):
+        if (
+                idx1 == idx2
+                or idx1 not in range(len(joueurs))
+                or idx2 not in range(len(joueurs))
+         ):
             print("Sélection invalide.")
             return
     except ValueError:
@@ -211,8 +238,16 @@ def tester_match_et_ronde_dynamique(joueurs):
         return
 
     try:
-        score1 = float(input(f"Score pour {joueurs[idx1].nom} {joueurs[idx1].prenom} : "))
-        score2 = float(input(f"Score pour {joueurs[idx2].nom} {joueurs[idx2].prenom} : "))
+        score1 = float(
+            input(
+                f"Score pour {joueurs[idx1].nom} {joueurs[idx1].prenom} : "
+            )
+        )
+        score2 = float(
+            input(
+                f"Score pour {joueurs[idx2].nom} {joueurs[idx2].prenom} : "
+                )
+            )
     except ValueError:
         print("Scores invalides, mis à 0 par défaut.")
         score1 = 0
@@ -224,10 +259,12 @@ def tester_match_et_ronde_dynamique(joueurs):
     print("\n----- Affichage Match ------")
     afficher_match(match)
     afficher_ronde(ronde)
-    
+
+
 # Charger les joueurs sauvegardés dès le lancement
 joueurs = charger_joueurs()
 tournois = charger_tournois()
+
 
 def menu_principal():
     global tournois, joueurs
@@ -291,9 +328,12 @@ def menu_principal():
                 if 1 <= selection <= len(tournois):
                     tournoi = tournois[selection - 1]
                     if len(tournoi.rondes) < tournoi.nombre_de_rondes:
-                       ronde = start_new_round(tournoi)
+                        ronde = start_new_round(tournoi)
                     else:
-                        print(f"Le nombre maximum de {tournoi.nombre_de_rondes} tours a déjà étéatteint pour ce tournoi")
+                        print(
+                            f"Le nombre maximum de {tournoi.nombre_de_rondes} "
+                            "tours a déjà étéatteint pour ce tournoi"
+                              )
                 else:
                     print("Numéro invalide.")
             else:
@@ -312,9 +352,14 @@ def menu_principal():
         elif choix == "11":
             if tournoi:
                 print("\nClassement du tournoi :")
-                classement = sorted(tournoi.joueurs, key=lambda j: j.points, reverse=True)
+                classement = sorted(
+                    tournoi.joueurs, key=lambda j: j.points, reverse=True
+                    )
                 for idx, joueur in enumerate(classement, start=1):
-                    print(f"{idx}. {joueur.nom} {joueur.prenom} - {joueur.points} points")
+                    print(
+                        f"{idx}. {joueur.nom} {joueur.prenom} -"
+                        f"{joueur.points} points"
+                    )
             else:
                 print("Aucun tournoi sélectionné.")
         elif choix == "12":
@@ -329,4 +374,3 @@ def menu_principal():
 
         else:
             print("Choix invalide. Veuillez réessayer.")
-
