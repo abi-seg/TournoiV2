@@ -7,7 +7,7 @@ Un programme Python pour gérer des tournois d’échecs en club, basé sur l’
 - Création et gestion des joueurs
 - Création et gestion des tournois
 - Sélection des joueurs pour chaque tournoi
-- Génération automatique des appariements (système suisse)
+- Génération automatique des appariements 
 - Saisie des résultats de chaque match
 - Calcul et affichage du classement
 - Sauvegarde et chargement des données au format JSON
